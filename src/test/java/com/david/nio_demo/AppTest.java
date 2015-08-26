@@ -8,13 +8,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Method;
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.SocketAddress;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.Channel;
+import java.nio.channels.DatagramChannel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -35,6 +38,7 @@ import org.junit.Test;
 
 public class AppTest
 {
+	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static final String RW = "rw";
 
@@ -305,31 +309,30 @@ public class AppTest
 			socketChannel.write(buff);
 		}
 
-		socketChannel.close();		
+		socketChannel.close();
 		System.out.println("after close, socketIsConnected: " + socketChannel.isConnected());
 	}
 
 	@Test
 	public void testServerSocketChannelConnect() throws IOException, InterruptedException
 	{
-		//打开连接
+		// 打开连接
 		ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
 		ServerSocket serverSocket = serverSocketChannel.socket();
 		System.out.println(serverSocket);
 		serverSocket.bind(new InetSocketAddress("localhost", 9999));
 		System.err.println(serverSocket);
 
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		ByteBuffer buff = ByteBuffer.allocate(128);
 		StringBuilder sb = null;
 		while (true)
 		{
-			//一旦读完的buffer需要再被写入之前可以进行clear()或者compact()操作，compact()会保留未读取数据，先写写
+			// 一旦读完的buffer需要再被写入之前可以进行clear()或者compact()操作，compact()会保留未读取数据，先写写
 			buff.clear();
 			System.out.println("The server socket is started...");
 			SocketChannel socketChannel = serverSocketChannel.accept();
 			System.out.println("accepted a socketChannel information: " + socketChannel);
-			int readLength = socketChannel.read(buff);			
+			int readLength = socketChannel.read(buff);
 			System.out.println("readLength: " + readLength + ", " + sdf.format(new Date()));
 
 			buff.flip();
@@ -342,5 +345,55 @@ public class AppTest
 			System.err.println("received information: " + sb.toString());
 		}
 
+	}
+
+	@Test
+	public void testDatagramChannelClient() throws IOException
+	{
+		DatagramChannel channel = DatagramChannel.open();
+		String data = "hello, daviddai, " + sdf.format(new Date());
+		ByteBuffer buff = ByteBuffer.allocate(128);
+		buff.clear();
+		buff.put(data.getBytes());
+		buff.flip();
+
+		int byteSent = channel.send(buff, new InetSocketAddress("localhost", 9998));
+		System.out.println("byteSent: " + byteSent);
+
+	}
+
+	@Test
+	public void testDatagramChannelServer() throws IOException
+	{
+		DatagramChannel channel = DatagramChannel.open();
+		DatagramSocket datagramSocket = channel.socket();
+		datagramSocket.bind(new InetSocketAddress("localhost", 9998));
+		System.out.println(datagramSocket);
+		System.out.println(datagramSocket.getInetAddress());
+		System.out.println(datagramSocket.getLocalAddress());
+		System.out.println(datagramSocket.getRemoteSocketAddress());
+		System.out.println(datagramSocket.getLocalSocketAddress());
+		System.err.println("===============================");
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		ByteBuffer buff = ByteBuffer.allocate(128);
+		StringBuilder sb = null;
+
+		while (true)
+		{
+			buff.clear();
+			System.out.println("The server socket is started...");
+			SocketAddress socketAddress = channel.receive(buff);
+			System.out.println(socketAddress + ", " + sdf.format(new Date()));
+
+			buff.flip();
+			sb = new StringBuilder();
+			while (buff.hasRemaining())
+			{
+				sb.append((char) buff.get());
+			}
+
+			System.err.println(sb.toString());
+		}
 	}
 }
