@@ -1,4 +1,4 @@
-package com.david.nio_demo;
+package com.david.nio;
 
 /**
  * Hello world!
