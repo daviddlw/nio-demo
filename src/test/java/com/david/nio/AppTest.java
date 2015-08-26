@@ -19,6 +19,7 @@ import java.nio.channels.ByteChannel;
 import java.nio.channels.Channel;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.FileChannel;
+import java.nio.channels.Pipe;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -36,37 +37,31 @@ import javax.swing.plaf.SliderUI;
 
 import org.junit.Test;
 
-public class AppTest
-{
+public class AppTest {
 	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static final String RW = "rw";
 
 	@Test
-	public void test()
-	{
+	public void test() {
 		fail("Not yet implemented");
 	}
 
 	@Test
-	public void testApp()
-	{
+	public void testApp() {
 		Method[] methods = ByteChannel.class.getMethods();
-		for (Method method : methods)
-		{
+		for (Method method : methods) {
 			System.out.println(method);
 		}
 	}
 
-	private File getFile(String path)
-	{
+	private File getFile(String path) {
 
 		return new File(path);
 	}
 
 	@Test
-	public void testRandomAccessFile() throws IOException
-	{
+	public void testRandomAccessFile() throws IOException {
 		String path = "F:" + File.separator + "静夜思.txt";
 		RandomAccessFile raf = new RandomAccessFile(getFile(path), RW);
 		FileChannel fileChannel = raf.getChannel();
@@ -74,14 +69,12 @@ public class AppTest
 
 		int byteRead = fileChannel.read(byteBuffer);
 
-		while (byteRead != -1)
-		{
+		while (byteRead != -1) {
 			System.out.println("Read: " + byteRead);
 
 			byteBuffer.flip(); // 注意数据翻转
 
-			while (byteBuffer.hasRemaining())
-			{
+			while (byteBuffer.hasRemaining()) {
 				System.out.print((char) byteBuffer.get());
 			}
 
@@ -94,15 +87,13 @@ public class AppTest
 	}
 
 	@Test
-	public void testBuffer()
-	{
+	public void testBuffer() {
 		System.out.println("从buffer读取到channel");
 		System.out.println("使用get从buffer");
 	}
 
 	@Test
-	public void testBufferDemo() throws IOException
-	{
+	public void testBufferDemo() throws IOException {
 		String path = "F:" + File.separator + "静夜思.txt";
 		RandomAccessFile raf = new RandomAccessFile(new File(path), RW);
 		FileChannel fileChannel = raf.getChannel();
@@ -111,11 +102,9 @@ public class AppTest
 		int len = fileChannel.read(byteBuffer);
 		StringBuilder sb = new StringBuilder();
 
-		while (len != -1)
-		{
+		while (len != -1) {
 			byteBuffer.flip();
-			while (byteBuffer.hasRemaining())
-			{
+			while (byteBuffer.hasRemaining()) {
 				sb.append((char) byteBuffer.get());
 			}
 
@@ -128,8 +117,7 @@ public class AppTest
 	}
 
 	@Test
-	public void testWrapBuffer()
-	{
+	public void testWrapBuffer() {
 		String s1 = "你好中国";
 		String s2 = "hello, daviddai";
 		CharBuffer c1 = CharBuffer.wrap(s1);
@@ -140,8 +128,7 @@ public class AppTest
 	}
 
 	@Test
-	public void testTransferFrom() throws IOException
-	{
+	public void testTransferFrom() throws IOException {
 		String pattern = RW;
 		File fromFile = new File("F:" + File.separator + "niofile" + File.separator + "fromFile.txt");
 		RandomAccessFile fromAccessFile = new RandomAccessFile(fromFile, pattern);
@@ -165,8 +152,7 @@ public class AppTest
 	}
 
 	@Test
-	public void testTransferTo() throws IOException
-	{
+	public void testTransferTo() throws IOException {
 		String pattern = RW;
 
 		File fromFile = new File("F:" + File.separator + "niofile" + File.separator + "newFromFile.txt");
@@ -191,29 +177,24 @@ public class AppTest
 	}
 
 	@Test
-	public void testClearContents()
-	{
+	public void testClearContents() {
 		File fromFile = new File("F:" + File.separator + "niofile" + File.separator + "newFromFile.txt");
 		clearContents(fromFile);
 	}
 
-	private void clearContents(File file)
-	{
-		try
-		{
+	private void clearContents(File file) {
+		try {
 			FileWriter fw = new FileWriter(file);
 			fw.write("");
 			fw.close();
 			System.out.println("清理成功!");
-		} catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Test
-	public void testFileChannel() throws IOException
-	{
+	public void testFileChannel() throws IOException {
 		String path = "F:" + File.separator + "nioFile" + File.separator + "result.txt";
 		RandomAccessFile randomAccessFile = new RandomAccessFile(getFile(path), RW);
 		FileChannel fileChannel = randomAccessFile.getChannel();
@@ -230,8 +211,7 @@ public class AppTest
 		long beforeSize = fileChannel.size();
 		System.out.println("before write size: " + beforeSize);
 
-		while (byteBuffer.hasRemaining())
-		{
+		while (byteBuffer.hasRemaining()) {
 			fileChannel.write(byteBuffer);
 		}
 
@@ -246,36 +226,29 @@ public class AppTest
 	}
 
 	@Test
-	public void testSelector() throws IOException
-	{
+	public void testSelector() throws IOException {
 		SocketAddress socketAddress = new InetSocketAddress("172.16.21.200", 9999);
 		SocketChannel socketChannel = SocketChannel.open(socketAddress);
 		Selector selector = Selector.open();
 		socketChannel.configureBlocking(false);
 		socketChannel.register(selector, SelectionKey.OP_READ);
 
-		while (true)
-		{
+		while (true) {
 			int readChannel = selector.select();
 			if (readChannel == 0)
 				continue;
 
 			Set<SelectionKey> keys = selector.selectedKeys();
 			Iterator<SelectionKey> iterator = keys.iterator();
-			while (iterator.hasNext())
-			{
+			while (iterator.hasNext()) {
 				SelectionKey selectionKey = iterator.next();
-				if (selectionKey.isAcceptable())
-				{
+				if (selectionKey.isAcceptable()) {
 					System.out.println("isAcceptable");
-				} else if (selectionKey.isConnectable())
-				{
+				} else if (selectionKey.isConnectable()) {
 					System.out.println("isConnectable");
-				} else if (selectionKey.isReadable())
-				{
+				} else if (selectionKey.isReadable()) {
 					System.out.println("isReadable");
-				} else if (selectionKey.isWritable())
-				{
+				} else if (selectionKey.isWritable()) {
 					System.out.println("isWritable");
 				}
 
@@ -286,8 +259,7 @@ public class AppTest
 	}
 
 	@Test
-	public void testSocketChannelConnect() throws IOException
-	{
+	public void testSocketChannelConnect() throws IOException {
 		SocketChannel socketChannel = SocketChannel.open();
 		boolean isConnect = socketChannel.connect(new InetSocketAddress("localhost", 9999));
 		System.out.println("before close: " + isConnect + ", socketIsConnected: " + socketChannel.isConnected());
@@ -304,8 +276,7 @@ public class AppTest
 		System.out.println("buff.position(): " + buff.position());
 		buff.flip();
 
-		while (buff.hasRemaining())
-		{
+		while (buff.hasRemaining()) {
 			socketChannel.write(buff);
 		}
 
@@ -314,8 +285,7 @@ public class AppTest
 	}
 
 	@Test
-	public void testServerSocketChannelConnect() throws IOException, InterruptedException
-	{
+	public void testServerSocketChannelConnect() throws IOException, InterruptedException {
 		// 打开连接
 		ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
 		ServerSocket serverSocket = serverSocketChannel.socket();
@@ -325,8 +295,7 @@ public class AppTest
 
 		ByteBuffer buff = ByteBuffer.allocate(128);
 		StringBuilder sb = null;
-		while (true)
-		{
+		while (true) {
 			// 一旦读完的buffer需要再被写入之前可以进行clear()或者compact()操作，compact()会保留未读取数据，先写写
 			buff.clear();
 			System.out.println("The server socket is started...");
@@ -337,8 +306,7 @@ public class AppTest
 
 			buff.flip();
 			sb = new StringBuilder();
-			while (buff.hasRemaining())
-			{
+			while (buff.hasRemaining()) {
 				sb.append((char) buff.get());
 			}
 
@@ -348,8 +316,7 @@ public class AppTest
 	}
 
 	@Test
-	public void testDatagramChannelClient() throws IOException
-	{
+	public void testDatagramChannelClient() throws IOException {
 		DatagramChannel channel = DatagramChannel.open();
 		String data = "hello, daviddai, " + sdf.format(new Date());
 		ByteBuffer buff = ByteBuffer.allocate(128);
@@ -363,8 +330,7 @@ public class AppTest
 	}
 
 	@Test
-	public void testDatagramChannelServer() throws IOException
-	{
+	public void testDatagramChannelServer() throws IOException {
 		DatagramChannel channel = DatagramChannel.open();
 		DatagramSocket datagramSocket = channel.socket();
 		datagramSocket.bind(new InetSocketAddress("localhost", 9998));
@@ -374,13 +340,12 @@ public class AppTest
 		System.out.println(datagramSocket.getRemoteSocketAddress());
 		System.out.println(datagramSocket.getLocalSocketAddress());
 		System.err.println("===============================");
-		
+
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		ByteBuffer buff = ByteBuffer.allocate(128);
 		StringBuilder sb = null;
 
-		while (true)
-		{
+		while (true) {
 			buff.clear();
 			System.out.println("The server socket is started...");
 			SocketAddress socketAddress = channel.receive(buff);
@@ -388,12 +353,38 @@ public class AppTest
 
 			buff.flip();
 			sb = new StringBuilder();
-			while (buff.hasRemaining())
-			{
+			while (buff.hasRemaining()) {
 				sb.append((char) buff.get());
 			}
 
 			System.err.println(sb.toString());
 		}
+	}
+
+	@Test
+	public void testPipeSinkChannel() throws IOException {
+		Pipe pipe = Pipe.open();
+		Pipe.SinkChannel sinkChannel = pipe.sink();
+		String data = "hello, pipesink, " + sdf.format(new Date());
+		ByteBuffer buff = ByteBuffer.allocate(64);
+		buff.clear();
+		buff.put(data.getBytes());
+
+		buff.flip();
+		sinkChannel.write(buff);
+
+		System.out.println("=============source分割线=====================");
+		Pipe.SourceChannel sourceChannel = pipe.source();
+		ByteBuffer resultBuff = ByteBuffer.allocate(64);
+		int length = sourceChannel.read(resultBuff);
+		System.out.println("data length: " + length);
+	
+		StringBuilder sb = new StringBuilder();
+		resultBuff.flip();
+		while (resultBuff.hasRemaining()) {
+			sb.append((char) resultBuff.get());
+		}
+		
+		System.out.println(sb.toString());
 	}
 }
